@@ -185,6 +185,25 @@ export default function ParsimonyApp() {
   const nexusRef = useRef();
   const treeRef = useRef();
 
+  function downloadCSV(results, nexusName) {
+    if (!results?.charResults?.length) return;
+    const header = ["char_index", "parsimony_score", "num_states"];
+    const rows = results.charResults.map(({ char, score, nStates }) =>
+      [char, score, nStates].join(",")
+    );
+    const csv = [header.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const baseName = (nexusName || "parsimony_scores").replace(/\.[^./\\]+$/, "");
+    a.download = `${baseName}_scores.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
   const loadFile = (textSetter, nameSetter) => (e) => {
     const f = e.target.files[0];
     if (!f) return;
@@ -461,12 +480,29 @@ export default function ParsimonyApp() {
               background: "#0a1628", border: "1px solid #1e3a5f", borderRadius: 14,
               padding: "24px 20px"
             }}>
-              <h2 style={{ margin: "0 0 16px", fontSize: 16, fontWeight: 600, color: "#f1f5f9" }}>
-                Per-Character Detail
-                <span style={{ fontSize: 12, fontWeight: 400, color: "#475569", marginLeft: 10, fontFamily: mono }}>
-                  first {Math.min(100, results.charResults.length)} of {results.charResults.length}
-                </span>
-              </h2>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: "#f1f5f9" }}>
+                  Per-Character Detail
+                  <span style={{ fontSize: 12, fontWeight: 400, color: "#475569", marginLeft: 10, fontFamily: mono }}>
+                    first {Math.min(100, results.charResults.length)} of {results.charResults.length}
+                  </span>
+                </h2>
+                <button
+                  onClick={() => downloadCSV(results, nexusName)}
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 6,
+                    border: "1px solid #1e3a5f",
+                    background: "#020617",
+                    color: "#e2e8f0",
+                    fontFamily: mono,
+                    fontSize: 11,
+                    cursor: "pointer"
+                  }}
+                >
+                  Download CSV
+                </button>
+              </div>
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: mono, fontSize: 12 }}>
                   <thead>
