@@ -186,7 +186,7 @@ export default function ParsimonyApp() {
   const treeRef = useRef();
 
   function downloadCSV(results, nexusName) {
-    if (!results?.charResults?.length) return;
+    if (!results || !results.charResults || !results.charResults.length) return;
     const header = ["char_index", "parsimony_score", "num_states"];
     const rows = results.charResults.map(({ char, score, nStates }) =>
       [char, score, nStates].join(",")
